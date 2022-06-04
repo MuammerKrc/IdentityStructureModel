@@ -60,5 +60,30 @@ namespace IdentityStructureModel.Controllers
             return RedirectToAction("Index","Home");
         }
 
+        public IActionResult SignUp()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> SignUp(UserSignUpViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            var user = model.CreateUser();
+            IdentityResult result = await _userManager.CreateAsync(user,model.Password);
+            if (!result.Succeeded)
+            {
+                result.Errors.ToList().ForEach(i =>
+                {
+                    ModelState.AddModelError("",i.Description);
+                });
+                return View();
+            }
+
+            return RedirectToAction("Login");
+        }
     }
 }
