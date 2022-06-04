@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityStructureModel.CustomValidations;
 using IdentityStructureModel.IdentityDbContexts;
 using IdentityStructureModel.IdentityModels;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -43,7 +44,11 @@ namespace IdentityStructureModel
                 opt.Password.RequireUppercase = false;
                 opt.Password.RequiredUniqueChars = 3;
                 opt.Password.RequiredLength = 5;
-            }).AddEntityFrameworkStores<AppIdentityDbContext>().AddDefaultTokenProviders();
+            }).AddEntityFrameworkStores<AppIdentityDbContext>()
+                .AddDefaultTokenProviders()
+                .AddUserValidator<CustomUserValidator>()
+                .AddPasswordValidator<CustomPasswordValidator>()
+                .AddErrorDescriber<CustomIdentityErrorDescriber>();
 
             services.ConfigureApplicationCookie(opt =>
             {
@@ -57,7 +62,7 @@ namespace IdentityStructureModel
                     Name = "IdentityStructureModelCookie",
                     HttpOnly = false,
                 };
-                opt.ExpireTimeSpan=TimeSpan.FromDays(15);
+                opt.ExpireTimeSpan = TimeSpan.FromDays(15);
                 opt.SlidingExpiration = true;
             });
             services.AddControllersWithViews();

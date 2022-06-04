@@ -23,7 +23,6 @@ namespace IdentityStructureModel.ViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-
         public AppUser CreateUser()
         {
             return new AppUser()
