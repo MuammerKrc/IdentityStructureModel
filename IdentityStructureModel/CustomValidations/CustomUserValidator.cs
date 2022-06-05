@@ -20,9 +20,7 @@ namespace IdentityStructureModel.CustomValidations
                     errors.Add(new IdentityError() { Code = "FirstLetterError", Description = "Kullanıcı adı rakam ile başlayamaz." });
                 }
             }
-
             //you can add more validator right here
-
             if (errors.Count == 0)
             {
                 return Task.FromResult(IdentityResult.Success);

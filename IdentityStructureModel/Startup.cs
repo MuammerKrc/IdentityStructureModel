@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityStructureModel.CustomValidations;
+using IdentityStructureModel.EmailSender;
 using IdentityStructureModel.IdentityDbContexts;
 using IdentityStructureModel.IdentityModels;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -34,7 +35,16 @@ namespace IdentityStructureModel
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
-
+            services.AddScoped<IEmailSender, SmtpEmailSender>(i =>
+            {
+                return new SmtpEmailSender(
+                    Configuration["EmailSender:Host"],
+                    Configuration.GetValue<int>("EmailSender:Port"),
+                    Configuration.GetValue<bool>("EmailSender:EnableSSL"),
+                    Configuration["EmailSender:UserName"],
+                    Configuration["EmailSender:Password"]
+                );
+            });
             services.AddIdentity<AppUser, AppRole>(opt =>
             {
                 opt.User.RequireUniqueEmail = true;
