@@ -63,8 +63,8 @@ namespace IdentityStructureModel
             services.ConfigureApplicationCookie(opt =>
             {
                 opt.AccessDeniedPath = "/Account/AccessDenied";
-                opt.LoginPath = "/Account/Login";
-                opt.LogoutPath = "/Account/Logout";
+                opt.LoginPath = "/account/login";
+                opt.LogoutPath = "/Home/Index";
                 opt.Cookie = new CookieBuilder()
                 {
                     SameSite = SameSiteMode.Strict,

@@ -13,17 +13,13 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace IdentityStructureModel.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : BaseController
     {
-        private readonly UserManager<AppUser> _userManager;
-        private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailSender _emailSender;
         string userErrorMessage = "Kullanıcı bulunamadı";
 
-        public AccountController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, IEmailSender emailSender)
+        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,RoleManager<AppRole> roleManager, IEmailSender emailSender):base(signInManager,userManager,roleManager)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
             _emailSender = emailSender;
         }
 
@@ -58,7 +54,7 @@ namespace IdentityStructureModel.Controllers
                 return View(model);
             }
 
-            if (TempData["ReturnUrl"] != null && string.IsNullOrEmpty(TempData["ReturnUrl"].ToString()))
+            if (TempData["ReturnUrl"] != null && !string.IsNullOrEmpty(TempData["ReturnUrl"].ToString()))
             {
                 return Redirect(TempData["ReturnUrl"].ToString());
             }
@@ -150,6 +146,12 @@ namespace IdentityStructureModel.Controllers
             await _userManager.UpdateSecurityStampAsync(user);
             model.Success = true;
             return View(model);
+        }
+
+        public IActionResult Logout()
+        {
+            _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
         }
     }
 }
