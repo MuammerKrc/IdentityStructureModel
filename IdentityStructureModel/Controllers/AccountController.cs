@@ -13,7 +13,7 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace IdentityStructureModel.Controllers
 {
-    public class AccountController : BaseController
+    public class AccountController : _BaseController
     {
         private readonly IEmailSender _emailSender;
         string userErrorMessage = "Kullanıcı bulunamadı";

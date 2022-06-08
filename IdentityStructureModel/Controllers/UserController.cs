@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace IdentityStructureModel.Controllers
 {
     [Authorize]
-    public class UserController : BaseController
+    public class UserController : _BaseController
     {
         public UserController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
             RoleManager<AppRole> roleManager) : base(signInManager, userManager, roleManager)

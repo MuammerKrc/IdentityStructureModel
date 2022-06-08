@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityStructureModel.Controllers
 {
-    public class BaseController:Controller
+    public class _BaseController:Controller
     {
         protected readonly UserManager<AppUser> _userManager;
         protected readonly SignInManager<AppUser> _signInManager;
         protected readonly RoleManager<AppRole> _roleManager;
 
-        public BaseController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)
+        public _BaseController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, RoleManager<AppRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;

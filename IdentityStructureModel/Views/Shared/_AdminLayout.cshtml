@@ -19,7 +19,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link" asp-action="Index" asp-controller="User">Üye Ana Sayfa</a>
+                            <a class="nav-link" asp-action="Index" asp-controller="Admin">Admin Ana Sayfa</a>
                         </li>
                     </ul>
                 </div>
@@ -34,20 +34,16 @@
             <div class="col-md-4">
                 <h3>Menü</h3>
 
-                <a class="btn btn-danger btn-block">Ankara sayfa</a>
+                <a class="btn btn-danger btn-block">üye claims</a>
 
-                <a class="btn btn-danger btn-block">Şiddet içeren sayfa</a>
-                <a class="btn btn-danger btn-block">Borsa bilgileri</a>
+                <a class="btn btn-danger btn-block" asp-controller="Admin" asp-action="Users">Kullanıcılar</a>
 
-                <a class="btn btn-info btn-block" asp-controller="User" asp-action="ChangePassword">Şifre değiştirme</a>
+                <a class="btn btn-danger btn-block" asp-controller="Admin" asp-action="Roles">Roller</a>
 
-                <a class="btn btn-info btn-block" asp-controller="User" asp-action="UserEdit">Bilgi güncelleme</a>
-
-                <a class="btn btn-info btn-block" asp-controller="Account" asp-action="Logout">Çıkış yap</a>
+                <a class="btn btn-danger btn-block" asp-action="Logout" asp-controller="Account" asp-route-returnUrl="/Home/Index">Çıkış yap</a>
             </div>
         </div>
     </div>
-
     <footer class="border-top footer text-muted">
         <div class="container">
             &copy; 2022 - IdentityStructureModel - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
