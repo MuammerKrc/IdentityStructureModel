@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityStructureModel.EmailSender;
 using IdentityStructureModel.HelperMethod;
@@ -18,7 +19,7 @@ namespace IdentityStructureModel.Controllers
         private readonly IEmailSender _emailSender;
         string userErrorMessage = "Kullanıcı bulunamadı";
 
-        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,RoleManager<AppRole> roleManager, IEmailSender emailSender):base(signInManager,userManager,roleManager)
+        public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager, IEmailSender emailSender) : base(signInManager, userManager, roleManager)
         {
             _emailSender = emailSender;
         }
@@ -59,7 +60,66 @@ namespace IdentityStructureModel.Controllers
                 return Redirect(TempData["ReturnUrl"].ToString());
             }
 
-            return RedirectToAction("Index","Home");
+            return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult FacebookLogin(string ReturnUrl)
+        {
+            string RedirectUrl = Url.Action("FacebookLoginResponse", "Account", new { returnUrl = ReturnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Facebook", RedirectUrl);
+            return new ChallengeResult("Facebook", properties);
+        }
+
+        public async Task<IActionResult> FacebookLoginResponse(string returnUrl)
+        {
+            string facebookLoginErr = "Facebook ile login başarısız";
+            ExternalLoginInfo externalLoginInfo = await _signInManager.GetExternalLoginInfoAsync();
+            if (externalLoginInfo == null)
+            {
+                ModelState.AddModelError("", facebookLoginErr);
+                return RedirectToAction("Login");
+            }
+            else
+            {
+                var result = await _signInManager.ExternalLoginSignInAsync(externalLoginInfo.LoginProvider, externalLoginInfo.ProviderKey,
+                    true);
+                if (result.Succeeded)
+                {
+                    if (returnUrl != null) Redirect(returnUrl);
+
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    AppUser user = new AppUser();
+                    user.Email= externalLoginInfo.Principal.FindFirst(ClaimTypes.Email).Value;
+
+
+                    string externalUserId = externalLoginInfo.Principal.FindFirst(ClaimTypes.NameIdentifier).Value;
+                    if (externalLoginInfo.Principal.HasClaim(i => i.Type == ClaimTypes.Name) && externalUserId.Length > 5)
+                    {
+                        string userName = externalLoginInfo.Principal.FindFirst(ClaimTypes.Name).Value;
+                        userName = userName.Replace(' ', '-').ToLower() + externalUserId.Substring(0, 5).ToString();
+                        user.UserName = userName;
+                    }
+
+                    IdentityResult resultCreateUser = await _userManager.CreateAsync(user);
+                    if (resultCreateUser.Succeeded)
+                    {
+                        IdentityResult loginResult = await _userManager.AddLoginAsync(user, externalLoginInfo);
+                        if (loginResult.Succeeded)
+                        {
+                            await _signInManager.ExternalLoginSignInAsync(externalLoginInfo.LoginProvider,
+                                externalLoginInfo.ProviderKey, true);
+                            if (returnUrl != null) Redirect(returnUrl);
+                            return RedirectToAction("Index", "Home");
+                        }
+                    }
+                }
+                ModelState.AddModelError("", facebookLoginErr);
+                return RedirectToAction("Login");
+            }
+
         }
 
         public IActionResult SignUp()
@@ -75,12 +135,12 @@ namespace IdentityStructureModel.Controllers
             }
 
             var user = model.CreateUser();
-            IdentityResult result = await _userManager.CreateAsync(user,model.Password);
+            IdentityResult result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
             {
                 result.Errors.ToList().ForEach(i =>
                 {
-                    ModelState.AddModelError("",i.Description);
+                    ModelState.AddModelError("", i.Description);
                 });
                 return View(model);
             }
@@ -96,19 +156,19 @@ namespace IdentityStructureModel.Controllers
         public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel model)
         {
             if (!ModelState.IsValid) View(model);
-            var user =await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                ModelState.AddModelError("",userErrorMessage);
+                ModelState.AddModelError("", userErrorMessage);
                 return View();
             }
-            var token =await _userManager.GeneratePasswordResetTokenAsync(user);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var resetLink = Url.Action("ResetPasswordConfirm", "Account", new
             {
-                user=user.Id,
-                token=token
+                user = user.Id,
+                token = token
 
-            },HttpContext.Request.Scheme);
+            }, HttpContext.Request.Scheme);
             await _emailSender.SendResetPasswordEmail("muammer.karaca@vantaworks.com", resetLink);
             //HelperClass.SendResetPasswordEmail(model.Email,resetLink);
             model.Success = true;
@@ -116,7 +176,7 @@ namespace IdentityStructureModel.Controllers
             return View(model);
         }
 
-        public IActionResult ResetPasswordConfirm(string user,string token)
+        public IActionResult ResetPasswordConfirm(string user, string token)
         {
             var model = new ResetPasswordConfirmModel() { UserId = user, Token = token };
             return View(model);
@@ -138,7 +198,7 @@ namespace IdentityStructureModel.Controllers
             {
                 result.Errors.ToList().ForEach(i =>
                 {
-                    ModelState.AddModelError("",i.Description);
+                    ModelState.AddModelError("", i.Description);
                 });
                 return View(model);
             }

@@ -50,6 +50,13 @@ namespace IdentityStructureModel
                     Configuration["EmailSender:Password"]
                 );
             });
+
+            services.AddAuthentication().AddFacebook(opt =>
+            {
+                opt.AppId = Configuration["Authentication:FacebookAppId"];
+                opt.AppSecret = Configuration["Authentication:FacebookAppSecret"];
+            });
+
             services.AddIdentity<AppUser, AppRole>(opt =>
             {
                 opt.User.RequireUniqueEmail = true;
