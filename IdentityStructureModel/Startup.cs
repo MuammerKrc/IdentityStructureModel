@@ -55,6 +55,10 @@ namespace IdentityStructureModel
             {
                 opt.AppId = Configuration["Authentication:FacebookAppId"];
                 opt.AppSecret = Configuration["Authentication:FacebookAppSecret"];
+            }).AddGoogle(opt =>
+            {
+                opt.ClientId = Configuration["Authentication:GoogleAppId"];
+                opt.ClientSecret = Configuration["Authentication:GoogleAppSecret"];
             });
 
             services.AddIdentity<AppUser, AppRole>(opt =>

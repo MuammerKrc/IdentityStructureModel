@@ -65,12 +65,18 @@ namespace IdentityStructureModel.Controllers
 
         public IActionResult FacebookLogin(string ReturnUrl)
         {
-            string RedirectUrl = Url.Action("FacebookLoginResponse", "Account", new { returnUrl = ReturnUrl });
+            string RedirectUrl = Url.Action("ExternalLogin", "Account", new { returnUrl = ReturnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties("Facebook", RedirectUrl);
             return new ChallengeResult("Facebook", properties);
         }
+        public IActionResult GoogleLogin(string ReturnUrl)
+        {
+            string RedirectUrl = Url.Action("ExternalLogin", "Account", new { ReturnUrl = ReturnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", RedirectUrl);
+            return new ChallengeResult("Google", properties);
+        }
 
-        public async Task<IActionResult> FacebookLoginResponse(string returnUrl)
+        public async Task<IActionResult> ExternalLogin(string returnUrl)
         {
             string facebookLoginErr = "Facebook ile login başarısız";
             ExternalLoginInfo externalLoginInfo = await _signInManager.GetExternalLoginInfoAsync();
