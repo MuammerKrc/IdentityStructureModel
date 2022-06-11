@@ -2,13 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityStructureModel.IdentityModels;
 using IdentityStructureModel.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace IdentityStructureModel.Controllers
 {
+    [Authorize(Roles = "admin")]
     public class AdminController : _BaseController
     {
         public AdminController(SignInManager<AppUser> signInManager, UserManager<AppUser> userManager, RoleManager<AppRole> roleManager) : base(signInManager, userManager, roleManager)
@@ -17,6 +20,11 @@ namespace IdentityStructureModel.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+        [Authorize(policy: "CityPolicy")]
+        public IActionResult Claims()
+        {
+            return View(User.Claims.ToList());
         }
 
         public IActionResult Users()
@@ -52,7 +60,7 @@ namespace IdentityStructureModel.Controllers
             return RedirectToAction("Roles");
         }
 
-      
+
 
         public async Task<IActionResult> RoleDelete(string id)
         {
@@ -82,7 +90,7 @@ namespace IdentityStructureModel.Controllers
                 {
                     err = roleNotFoundErr
                 });
-            
+
             return View(role.GetRoleViewModel());
         }
         [HttpPost]
@@ -98,12 +106,12 @@ namespace IdentityStructureModel.Controllers
             }
 
             model.UpdateRole(role);
-            IdentityResult result =await _roleManager.UpdateAsync(role);
+            IdentityResult result = await _roleManager.UpdateAsync(role);
             if (!result.Succeeded)
             {
                 result.Errors.ToList().ForEach(i =>
                 {
-                    ModelState.AddModelError("",i.Description);
+                    ModelState.AddModelError("", i.Description);
                 });
                 return View(model);
             }
@@ -126,7 +134,7 @@ namespace IdentityStructureModel.Controllers
                 RoleAssignViewModel model = new RoleAssignViewModel();
                 model.RoleId = item.Id;
                 model.RoleName = item.Name;
-                if(userRoles.Contains(item.Name))
+                if (userRoles.Contains(item.Name))
                 {
                     model.Exist = true;
                 }
@@ -158,5 +166,30 @@ namespace IdentityStructureModel.Controllers
 
             return RedirectToAction("Users");
         }
+
+        public async Task<IActionResult> FreeDayDefine()
+        {
+            if (User != null && User.Identity.IsAuthenticated)
+            {
+                if (!User.HasClaim(i => i.Type == "freeDay"))
+                {
+                    
+                    Claim claim = new Claim("freeDay", DateTime.Now.AddMinutes(2).ToLongTimeString(),
+                        ClaimValueTypes.String, "custom");
+                    var result=await _userManager.AddClaimAsync(currentUser, claim);
+                    await _signInManager.SignOutAsync();
+                    await _signInManager.SignInAsync(currentUser, true);
+                }
+            }
+
+            return RedirectToAction("RestrictedPage");
+        }
+
+        [Authorize(policy:"FreeDayPolicy")]
+        public async Task<IActionResult> RestrictedPage()
+        {
+            return View();
+        }
+
     }
 }

@@ -8,11 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using IdentityStructureModel.CustomAuthorization;
 using IdentityStructureModel.CustomValidations;
 using IdentityStructureModel.EmailSender;
 using IdentityStructureModel.IdentityDbContexts;
 using IdentityStructureModel.IdentityModels;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +34,8 @@ namespace IdentityStructureModel
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
+
             services.AddDbContext<AppIdentityDbContext>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
@@ -75,6 +80,20 @@ namespace IdentityStructureModel
                 opt.ExpireTimeSpan = TimeSpan.FromDays(15);
                 opt.SlidingExpiration = true;
             });
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("CityPolicy", policy =>
+                {
+                    policy.RequireClaim("city", "ankara");
+                });
+                opt.AddPolicy("FreeDayPolicy", policy =>
+                {
+                    policy.AddRequirements(new ExpireFreeDayRequirement());
+                });
+            });
+            
+            services.AddTransient<IAuthorizationHandler, ExpireFreeDayHandler>();
+            services.AddScoped<IClaimsTransformation, ClaimProvider.ClaimProvider>();
             services.AddControllersWithViews();
         }
 
@@ -93,8 +112,8 @@ namespace IdentityStructureModel
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
